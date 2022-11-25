@@ -1,8 +1,8 @@
 package com.example.taskmanager.model.entity;
 
 
+import com.example.taskmanager.model.dto.TaskDto;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -17,22 +17,26 @@ import java.util.UUID;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class Task {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
     private String description;
     @Enumerated(value = EnumType.STRING)
-    private Status status;
+    private Status status = Status.NOT_DONE;
     @CreationTimestamp
     private LocalDateTime createdWhen;
     private LocalDateTime dueDate;
     private LocalDateTime completedWhen;
 
+    public Task(TaskDto taskDto) {
+        this.description = taskDto.getDescription();
+        this.dueDate = taskDto.getDueDate();
+    }
 
     @SuppressWarnings("unused")
     public enum Status {
-        NOT_DONE, DONE, PAST_DUE
+        NOT_DONE,
+        DONE, PAST_DUE
         }
 }
