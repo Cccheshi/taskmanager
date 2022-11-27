@@ -2,7 +2,7 @@
 <configuration>
     <property name="logDir" value="logs"/>
     <property name="defaultPattern"
-              value="%date{dd/MM/yy HH:mm:ss} %level [%thread] %logger{10} %5p [library,%X{traceId:-},%X{spanId:-},%X{spanExport:-}] [%file:%line] %msg%n"/>
+              value="%date{dd/MM/yy HH:mm:ss} %level [%thread] %logger{10} %5p [taskmanager,%X{traceId:-},%X{spanId:-},%X{spanExport:-}] [%file:%line] %msg%n"/>
     <property name="generalLogName" value="taskmanager"/>
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">

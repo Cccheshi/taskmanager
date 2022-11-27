@@ -3,6 +3,7 @@ package com.example.taskmanager.model.entity;
 
 import com.example.taskmanager.model.dto.TaskDto;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -25,6 +26,7 @@ public class Task {
     @Enumerated(value = EnumType.STRING)
     private Status status = Status.NOT_DONE;
     @CreationTimestamp
+    @Setter(AccessLevel.NONE)
     private LocalDateTime createdWhen;
     private LocalDateTime dueDate;
     private LocalDateTime completedWhen;
