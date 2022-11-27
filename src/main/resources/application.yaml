@@ -14,8 +14,12 @@ spring:
     console.enabled: true
   jpa:
     show-sql: true
-#    properties:
-#      hibernate:
-#        format_sql: true
+    properties:
+      hibernate:
+        format_sql: true
     hibernate:
       ddl-auto: update
+
+application:
+  scheduler:
+    audit-tasks-status-cron: "0 */1 * * * *"
