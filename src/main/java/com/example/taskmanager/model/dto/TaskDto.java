@@ -23,4 +23,9 @@ public class TaskDto {
     private LocalDateTime createdWhen;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime completedWhen;
+
+    public TaskDto(UUID id, String description) {
+        this.id = id;
+        this.description = description;
+    }
 }

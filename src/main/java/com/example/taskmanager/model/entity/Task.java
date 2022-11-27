@@ -3,10 +3,7 @@ package com.example.taskmanager.model.entity;
 
 import com.example.taskmanager.model.dto.TaskDto;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
@@ -18,6 +15,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 public class Task {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -30,6 +28,11 @@ public class Task {
     private LocalDateTime createdWhen;
     private LocalDateTime dueDate;
     private LocalDateTime completedWhen;
+
+    public Task(String description, LocalDateTime dueDate) {
+        this.description = description;
+        this.dueDate = dueDate;
+    }
 
     public Task(TaskDto taskDto) {
         this.description = taskDto.getDescription();
