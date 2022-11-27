@@ -2,6 +2,7 @@ package com.example.taskmanager.service;
 
 import com.example.taskmanager.exception.ElementNotFoundException;
 import com.example.taskmanager.exception.NotAllowedActionException;
+import com.example.taskmanager.mapper.TaskMapper;
 import com.example.taskmanager.model.dto.TaskDto;
 import com.example.taskmanager.model.entity.Task;
 import com.example.taskmanager.repository.TaskRepository;
@@ -9,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -16,11 +18,12 @@ import java.util.UUID;
 public class TaskService {
 
     private final TaskRepository taskRepository;
+    private final TaskMapper taskMapper;
     private static final String NOT_FOUND_ERROR = "Element with id: %s was not found. %s";
     private static final String NOT_ALLOWED_ACTION_STATUS_PAS_DUE = "It is not allowed to change status to Past Due.";
 
     public void addTask(TaskDto taskDto) {
-        taskRepository.save(new Task(taskDto));
+        taskRepository.save(taskMapper.mapTaskDtoToTask(taskDto));
     }
 
     public void partialUpdate(TaskDto taskDto) {
@@ -40,6 +43,15 @@ public class TaskService {
             task.setCompletedWhen(Task.Status.DONE.equals(status) ? LocalDateTime.now() : null);
             taskRepository.save(task);
         }
+    }
+
+    public List<TaskDto> getNotCompletedTasks() {
+        List<Task> tasks = taskRepository.findByStatus(Task.Status.NOT_DONE);
+        return taskMapper.mapTaskListToTaskDto(tasks);
+    }
+
+    public TaskDto getTaskDto(UUID id) {
+        return taskMapper.mapTaskToTaskDto(getTask(id));
     }
 
     private Task getTask(UUID id) {

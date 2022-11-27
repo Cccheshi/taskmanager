@@ -13,4 +13,6 @@ public interface TaskRepository extends CrudRepository<Task, UUID> {
     @NonNull
     List<Task> findAll();
 
+    List<Task> findByStatus(Task.Status status);
+
 }

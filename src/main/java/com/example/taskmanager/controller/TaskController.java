@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -33,5 +34,15 @@ public class TaskController {
     @PatchMapping(path = "/{id}/status/{status}")
     public void updateTaskStatus(@PathVariable UUID id, @PathVariable Status status) {
         taskService.updateTaskStatus(id, status);
+    }
+
+    @GetMapping(path = "status/not_done")
+    public List<TaskDto> getNotCompletedTasks(){
+        return taskService.getNotCompletedTasks();
+    }
+
+    @GetMapping("/{id}")
+    public TaskDto getTask(@PathVariable UUID id){
+        return taskService.getTaskDto(id);
     }
 }
