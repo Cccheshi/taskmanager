@@ -1,4 +1,4 @@
 package com.example.taskmanager.model.dto.groups;
 
-public interface UpdateGroup {
+public interface UpdatingGroup {
 }

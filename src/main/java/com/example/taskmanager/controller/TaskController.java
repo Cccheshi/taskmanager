@@ -1,7 +1,7 @@
 package com.example.taskmanager.controller;
 
 import com.example.taskmanager.model.dto.TaskDto;
-import com.example.taskmanager.model.dto.groups.UpdateGroup;
+import com.example.taskmanager.model.dto.groups.UpdatingGroup;
 import com.example.taskmanager.model.entity.Task.Status;
 import com.example.taskmanager.service.TaskService;
 import jakarta.validation.Valid;
@@ -26,8 +26,8 @@ public class TaskController {
         taskService.addTask(taskDto);
     }
 
-    @PatchMapping
-    public void updateTask(@RequestBody @Validated(UpdateGroup.class) TaskDto taskDto) {
+    @PutMapping
+    public void updateTask(@RequestBody @Validated(UpdatingGroup.class) TaskDto taskDto) {
         taskService.partialUpdate(taskDto);
     }
 
@@ -44,5 +44,10 @@ public class TaskController {
     @GetMapping("/{id}")
     public TaskDto getTask(@PathVariable UUID id){
         return taskService.getTaskDto(id);
+    }
+
+    @DeleteMapping
+    public void deleteTasks(){
+        taskService.deleteTasks();
     }
 }

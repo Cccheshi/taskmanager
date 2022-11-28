@@ -27,15 +27,17 @@ public class TaskService {
 
     public void addTask(TaskDto taskDto) {
         log.info("Add new task {}", taskDto);
-        taskRepository.save(taskMapper.mapTaskDtoToTask(taskDto));
+        Task task = taskMapper.mapTaskDtoToTask(taskDto);
+        statusAudit(task);
     }
 
     public void partialUpdate(TaskDto taskDto) {
         log.info("Update task {}", taskDto);
         Task task = getTask(taskDto.getId());
         task.setDescription(taskDto.getDescription());
+        task.setDueDate(taskDto.getDueDate());
+        statusAudit(task);
         taskRepository.save(task);
-
     }
 
     public void updateTaskStatus(UUID id, Task.Status status) {
@@ -47,6 +49,7 @@ public class TaskService {
         if (!task.getStatus().equals(status)) {
             task.setStatus(status);
             task.setCompletedWhen(Task.Status.DONE.equals(status) ? LocalDateTime.now() : null);
+            statusAudit(task);
             taskRepository.save(task);
         }
     }
@@ -69,17 +72,31 @@ public class TaskService {
 
     @Scheduled(cron = "${application.scheduler.audit-tasks-status-cron}")
     @SuppressWarnings("unused")
-    private void auditTasksStatus() {
+    private void tasksStatusAudit() {
         log.info("Task status audit started");
-        taskRepository.findAll().forEach(this::statusAudit);
+        taskRepository.findByStatusAndDueDateNotNull(Task.Status.NOT_DONE).forEach(this::statusAudit);
         log.info("Task status audit finished");
     }
 
     private void statusAudit(Task task) {
-        if (LocalDateTime.now().isAfter(task.getDueDate())) {
-            task.setStatus(Task.Status.PAST_DUE);
+        if (!Task.Status.DONE.equals(task.getStatus())) {
+            if (isPastDue(task)) {
+                task.setStatus(Task.Status.PAST_DUE);
+            } else if (task.getDueDate() == null
+                    || !isPastDue(task)) {
+                task.setStatus(Task.Status.NOT_DONE);
+            }
             taskRepository.save(task);
         }
     }
 
+    private boolean isPastDue(Task task) {
+        return task.getDueDate() != null
+                && LocalDateTime.now().isAfter(task.getDueDate())
+                && Task.Status.NOT_DONE.equals(task.getStatus());
+    }
+
+    public void deleteTasks() {
+        taskRepository.deleteAll();
+    }
 }

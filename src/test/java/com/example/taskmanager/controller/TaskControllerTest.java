@@ -18,6 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -32,9 +33,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class TaskControllerTest {
 
     private static final String PATH = "/api/v1/task";
-    private static final String PATH_STATUS_DONE = "/api/v1/task/%s/status/%s";
+    private static final String PATH_STATUS = "/api/v1/task/%s/status/%s";
     private static final String PATH_TASK_BY_ID = "/api/v1/task/%s";
-    private static final LocalDateTime DUE_DATE_TIME = LocalDateTime.of(2022, 4, 22, 2, 0);
+    private static final LocalDateTime DUE_DATE_TIME_FUTURE = LocalDateTime.now().plusYears(3);
+    private static final LocalDateTime DUE_DATE_TIME_PAST = LocalDateTime.now().minusYears(2);
     private static final String NOT_ALLOWED_ACTION_STATUS_PAS_DUE = "It is not allowed to change status to Past Due.";
     @Autowired
     private TaskRepository taskRepository;
@@ -62,40 +64,24 @@ public class TaskControllerTest {
     }
 
     @Test
-    public void addTaskWhenRequiredFieldsNotExistsThenThrowException() throws Exception {
-        String request = """
-                {
-                }
-                """;
-        mvc.perform(MockMvcRequestBuilders.post(PATH)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(request)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
-                .andExpect(result ->
-                        Assertions.assertThat(Objects.requireNonNull(result.getResolvedException()).getMessage())
-                                .startsWith("Validation failed"));
-    }
-
-    @Test
-    public void updateTaskWhenRequiredFieldsExistsThenUpdateTask() throws Exception {
-        Task task = findRandomTaskOrCreateNew();
+    public void updateTaskWhenDueDateInFutureThenUpdateTask() throws Exception {
+        Task task = findRandomTaskOrCreateNew(DUE_DATE_TIME_FUTURE);
         TaskDto taskDto = taskMapper.mapTaskToTaskDto(task);
         taskDto.setDescription("changed description");
-        mvc.perform(MockMvcRequestBuilders.patch(PATH)
+        taskDto.setDueDate(DUE_DATE_TIME_FUTURE);
+        mvc.perform(MockMvcRequestBuilders.put(PATH)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(taskDto))
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
         TaskDto updatedTask = taskMapper.mapTaskToTaskDto(taskRepository.findById(task.getId()).orElseThrow());
-        Assertions.assertThat(taskDto).isEqualTo(updatedTask);
+        Assertions.assertThat(Task.Status.NOT_DONE).isEqualTo(updatedTask.getStatus());
     }
-
 
     @Test
     public void updateTaskWhenTaskNotExistsThenThrowNotFoundException() throws Exception {
         TaskDto taskDto = new TaskDto(UUID.randomUUID(), "description");
-        mvc.perform(MockMvcRequestBuilders.patch(PATH)
+        mvc.perform(MockMvcRequestBuilders.put(PATH)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(taskDto))
                         .accept(MediaType.APPLICATION_JSON))
@@ -106,7 +92,7 @@ public class TaskControllerTest {
     public void updateTaskStatusToDoneWhenTaskNotDoneThenChangeStatus() throws Exception {
         Task task = findRandomNotDoneTaskOrCreateNew();
         mvc.perform(MockMvcRequestBuilders
-                        .patch(String.format(PATH_STATUS_DONE, task.getId(), Task.Status.DONE)))
+                        .patch(String.format(PATH_STATUS, task.getId(), Task.Status.DONE)))
                 .andExpect(status().isOk());
         Task taskAfter = taskRepository.findById(task.getId()).orElseThrow();
         Assertions.assertThat(taskAfter.getStatus())
@@ -115,13 +101,13 @@ public class TaskControllerTest {
     }
 
     @Test
-    public void updateTaskStatusToNotDoneDueWhenTaskDoneThenChangeStatus() throws Exception {
-        Task task = findRandomTaskOrCreateNew();
+    public void updateTaskStatusToNotDoneWhenTaskCompletedAndDueDateInFutureThenChangeStatus() throws Exception {
+        Task task = findRandomTaskOrCreateNew(DUE_DATE_TIME_FUTURE);
         mvc.perform(MockMvcRequestBuilders
-                        .patch(String.format(PATH_STATUS_DONE, task.getId(), Task.Status.DONE)))
+                        .patch(String.format(PATH_STATUS, task.getId(), Task.Status.DONE)))
                 .andExpect(status().isOk());
         mvc.perform(MockMvcRequestBuilders
-                        .patch(String.format(PATH_STATUS_DONE, task.getId(), Task.Status.NOT_DONE)))
+                        .patch(String.format(PATH_STATUS, task.getId(), Task.Status.NOT_DONE)))
                 .andExpect(status().isOk());
         Task taskAfter = taskRepository.findById(task.getId()).orElseThrow();
         Assertions.assertThat(taskAfter.getStatus())
@@ -130,10 +116,25 @@ public class TaskControllerTest {
     }
 
     @Test
-    public void updateTaskStatusToPastDueWhenTaskNotDoneThenThrowNotAllowedException() throws Exception {
-        Task task = findRandomTaskOrCreateNew();
+    public void updateTaskStatusToNotDoneWhenTaskCompletedAndDueDateInPastThenChangeStatusToPastDue() throws Exception {
+        Task task = findRandomTaskOrCreateNew(DUE_DATE_TIME_PAST);
         mvc.perform(MockMvcRequestBuilders
-                .patch(String.format(PATH_STATUS_DONE, task.getId(), Task.Status.PAST_DUE)))
+                        .patch(String.format(PATH_STATUS, task.getId(), Task.Status.DONE)))
+                .andExpect(status().isOk());
+        mvc.perform(MockMvcRequestBuilders
+                        .patch(String.format(PATH_STATUS, task.getId(), Task.Status.NOT_DONE)))
+                .andExpect(status().isOk());
+        Task taskAfter = taskRepository.findById(task.getId()).orElseThrow();
+        Assertions.assertThat(taskAfter.getStatus())
+                .isEqualTo(Task.Status.PAST_DUE);
+        Assertions.assertThat(taskAfter.getCompletedWhen()).isNull();
+    }
+
+    @Test
+    public void updateTaskStatusToPastDueWhenTaskNotDoneThenThrowNotAllowedException() throws Exception {
+        Task task = findRandomTaskOrCreateNew(DUE_DATE_TIME_FUTURE);
+        mvc.perform(MockMvcRequestBuilders
+                .patch(String.format(PATH_STATUS, task.getId(), Task.Status.PAST_DUE)))
                 .andExpect(status().isMethodNotAllowed())
                 .andExpect(result ->
                         Assertions.assertThat(Objects.requireNonNull(result.getResolvedException()).getMessage())
@@ -142,7 +143,7 @@ public class TaskControllerTest {
 
     @Test
     public void getTaskByIdWhenTaskExistsThenReturnTask() throws Exception {
-        Task task = findRandomTaskOrCreateNew();
+        Task task = findRandomTaskOrCreateNew(DUE_DATE_TIME_FUTURE);
         mvc.perform(MockMvcRequestBuilders
                         .get(String.format(PATH_TASK_BY_ID, task.getId())))
                 .andExpect(status().isOk())
@@ -157,22 +158,29 @@ public class TaskControllerTest {
     }
 
     private Task findRandomNotDoneTaskOrCreateNew() {
-        if (taskRepository.findByStatus(Task.Status.NOT_DONE).size() == 0) {
-            createNewTask();
+        List<Task> tasks = taskRepository.findByStatus(Task.Status.NOT_DONE);
+        if (tasks.size() == 0) {
+           return createNewTask(DUE_DATE_TIME_FUTURE);
+        }else {
+            return tasks.get(0);
         }
-        return taskRepository.findByStatus(Task.Status.NOT_DONE).get(0);
     }
 
-    private Task findRandomTaskOrCreateNew() {
-        if (taskRepository.findAll().size() == 0) {
-            createNewTask();
+    private Task findRandomTaskOrCreateNew(LocalDateTime localDateTime) {
+       List<Task> tasks = taskRepository.findAll()
+               .stream()
+               .filter(task -> task.getDueDate().isEqual(localDateTime)).toList();
+        if (tasks.size() == 0) {
+            return createNewTask(localDateTime);
+        } else {
+            return tasks.get(0);
         }
-
-        return taskRepository.findAll().get(0);
     }
 
-    private void createNewTask() {
-        taskRepository.save(new Task("description", DUE_DATE_TIME));
+    private Task createNewTask(LocalDateTime localDateTime) {
+       Task task = new Task("description", localDateTime);
+        taskRepository.save(task);
+        return task;
     }
 
 }

@@ -13,6 +13,7 @@ public interface TaskMapper {
     @Mapping(target = "completedWhen", ignore = true)
     @Mapping(target = "createdWhen", ignore = true)
     @Mapping(target = "status", ignore = true)
+    @Mapping(target = "description", defaultValue = "New reminder")
     Task mapTaskDtoToTask(TaskDto taskDto);
     TaskDto mapTaskToTaskDto(Task task);
     List<TaskDto> mapTaskListToTaskDto(List<Task> tasks);
