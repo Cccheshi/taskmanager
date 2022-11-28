@@ -3,8 +3,6 @@ package com.example.taskmanager.model.dto;
 import com.example.taskmanager.model.dto.groups.UpdatingGroup;
 import com.example.taskmanager.model.entity.Task;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
