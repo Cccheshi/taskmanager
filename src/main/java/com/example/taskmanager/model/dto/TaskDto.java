@@ -5,11 +5,13 @@ import com.example.taskmanager.model.entity.Task;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
+@NoArgsConstructor
 public class TaskDto {
 
     @NotNull(groups = UpdatingGroup.class, message = "Field id can not be null")

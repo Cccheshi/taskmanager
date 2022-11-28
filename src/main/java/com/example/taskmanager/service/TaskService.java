@@ -26,6 +26,7 @@ public class TaskService {
     private static final String NOT_ALLOWED_ACTION_STATUS_PAS_DUE = "It is not allowed to change status to Past Due.";
 
     public void addTask(TaskDto taskDto) {
+        taskDto = taskDto != null ? taskDto : new TaskDto();
         log.info("Add new task {}", taskDto);
         Task task = taskMapper.mapTaskDtoToTask(taskDto);
         statusAudit(task);

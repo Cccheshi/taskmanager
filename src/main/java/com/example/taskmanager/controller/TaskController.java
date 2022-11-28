@@ -22,7 +22,7 @@ public class TaskController {
     private final TaskService taskService;
 
     @PostMapping
-    public void addTask(@RequestBody @Valid TaskDto taskDto) {
+    public void addTask(@RequestBody(required = false) TaskDto taskDto) {
         taskService.addTask(taskDto);
     }
 

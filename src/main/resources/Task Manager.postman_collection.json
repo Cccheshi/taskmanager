@@ -1,0 +1,853 @@
+{
+	"info": {
+		"_postman_id": "2e9ec6c6-1e3f-4bd1-9745-2ee2eae2c3f2",
+		"name": "Task Manager",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "8474235"
+	},
+	"item": [
+		{
+			"name": "Preparing Data",
+			"item": [
+				{
+					"name": "Deleting all tasks",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/v1/task",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"task"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add a new task",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/v1/task",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"task"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All not completed Tasks",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"pm.collectionVariables.set(\"task_id\", jsonData[0].id);",
+									"",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/v1/task/status/not_done",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"task",
+								"status",
+								"not_done"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get task by id and checking that task was created",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Fields check after task creation\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.description).to.eql(pm.collectionVariables.get(\"default_task_name\"));",
+									"    pm.expect(jsonData.createdWhen).not.null;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/v1/task/{{task_id}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"task",
+								"{{task_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Test Cases",
+			"item": [
+				{
+					"name": "Changing Description and DueDate",
+					"item": [
+						{
+							"name": "Changing decsription and due date",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "    {\n        \"id\": \"{{task_id}}\",\n        \"description\": \"{{changed_description}}\",\n        \"dueDate\": \"{{due_date_in_future}}\"\n    }",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/api/v1/task",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"task"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Validation. Checking that description and due date fields have been changed",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"PChanging description and due date of task\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.description).to.eql(pm.collectionVariables.get(\"changed_description\"));",
+											"    pm.expect(jsonData.dueDate).to.eql(pm.collectionVariables.get(\"due_date_in_future\"));",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/api/v1/task/{{task_id}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"task",
+										"{{task_id}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Changing Status To Done",
+					"item": [
+						{
+							"name": "Update task's status to DONE",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/api/v1/task/{{task_id}}/status/DONE",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"task",
+										"{{task_id}}",
+										"status",
+										"DONE"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Validation. Checking that status is Done and completedWhen field is not null",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Changing Status To Done\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.status).to.eql(\"DONE\");",
+											"    pm.expect(jsonData.completedWhen).not.null;",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/api/v1/task/{{task_id}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"task",
+										"{{task_id}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Changing status to Not Done",
+					"item": [
+						{
+							"name": "Update status to Not Done",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/api/v1/task/{{task_id}}/status/NOT_DONE",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"task",
+										"{{task_id}}",
+										"status",
+										"NOT_DONE"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Checking that status is NOT_DONE and completedWhen field is null",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Changing status to Not Done\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.status).to.eql(\"NOT_DONE\");",
+											"    pm.expect(jsonData.completedWhen).to.null;",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/api/v1/task/{{task_id}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"task",
+										"{{task_id}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Changing status to PAST_DUE",
+					"item": [
+						{
+							"name": "Update status to PAST_DUE",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 405\", function () {",
+											"    pm.response.to.have.status(405);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/api/v1/task/{{task_id}}/status/PAST_DUE",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"task",
+										"{{task_id}}",
+										"status",
+										"PAST_DUE"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Validation. Checkind that nothing has been changed",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Changing Status to PAST_DUE\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.status).to.eql(\"NOT_DONE\");",
+											"    pm.expect(jsonData.completedWhen).to.null;",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/api/v1/task/{{task_id}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"task",
+										"{{task_id}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Changing description and dueDate to past",
+					"item": [
+						{
+							"name": "Changing description and due date to past",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "    {\n        \"id\": \"{{task_id}}\",\n        \"description\": \"{{changed_description3}}\",\n        \"dueDate\": \"{{due_date_in_past}}\"\n    }",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/api/v1/task",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"task"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Validation. Checking that description, due date and status fields  have been changed",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Changing DueDate to Past\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.description).to.eql(pm.collectionVariables.get(\"changed_description3\"));",
+											"    pm.expect(jsonData.dueDate).to.eql(pm.collectionVariables.get(\"due_date_in_past\"));",
+											"    pm.expect(jsonData.status).to.eql(\"PAST_DUE\");",
+											"",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/api/v1/task/{{task_id}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"task",
+										"{{task_id}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Deleting DueDate from task",
+					"item": [
+						{
+							"name": "Change due date to null",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "    {\n        \"id\": \"{{task_id}}\",\n        \"description\": \"{{changed_description3}}\"\n    }",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/api/v1/task",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"task"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Validation. Checking that dueDate, status have been changed",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Deleting dueDate from task\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.description).to.eql(pm.collectionVariables.get(\"changed_description3\"));",
+											"    pm.expect(jsonData.dueDate).to.null",
+											"    pm.expect(jsonData.status).to.eql(\"NOT_DONE\");",
+											"",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/api/v1/task/{{task_id}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"task",
+										"{{task_id}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Checking that tasks status won't be changed after setting dueDate to Past if status of task is Done",
+					"item": [
+						{
+							"name": "Update task's status to DONE",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/api/v1/task/{{task_id}}/status/DONE",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"task",
+										"{{task_id}}",
+										"status",
+										"DONE"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Changing due date to past",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "    {\n        \"id\": \"{{task_id}}\",\n        \"description\": \"{{changed_description3}}\",\n        \"dueDate\": \"{{due_date_in_past}}\"\n    }",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/api/v1/task",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"task"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Validation. Checking that dueDate has been changed and status hasn't been changed",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Positive test case. Fields check\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.description).to.eql(pm.collectionVariables.get(\"changed_description3\"));",
+											"    pm.expect(jsonData.dueDate).to.eql(pm.collectionVariables.get(\"due_date_in_past\"));",
+											"    pm.expect(jsonData.status).to.eql(\"DONE\");",
+											"",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/api/v1/task/{{task_id}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"task",
+										"{{task_id}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "task_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "host",
+			"value": "http://localhost:7002",
+			"type": "string"
+		},
+		{
+			"key": "changed_description",
+			"value": "ChangedDescription",
+			"type": "string"
+		},
+		{
+			"key": "due_date_in_future",
+			"value": "2023-03-03 22:01:02",
+			"type": "string"
+		},
+		{
+			"key": "due_date_in_past",
+			"value": "2022-03-03 22:01:02",
+			"type": "string"
+		},
+		{
+			"key": "changed_description3",
+			"value": "changed_description3",
+			"type": "string"
+		},
+		{
+			"key": "default_task_name",
+			"value": "New reminder",
+			"type": "string"
+		}
+	]
+}

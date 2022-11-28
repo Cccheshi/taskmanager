@@ -11,7 +11,10 @@ spring:
     password:
     driverClassName: org.h2.Driver
   h2:
-    console.enabled: true
+    console:
+      settings:
+        web-allow-others: true
+      enabled: true
   jpa:
     show-sql: true
     properties:
